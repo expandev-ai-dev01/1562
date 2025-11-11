@@ -1,4 +1,35 @@
+import { useState } from 'react';
+import { useProductList } from '@/domain/product/hooks/useProductList';
+import { useCategoryList } from '@/domain/product/hooks/useCategoryList';
+import { ProductGrid } from '@/domain/product/components/ProductGrid';
+import { CategoryFilter } from '@/domain/product/components/CategoryFilter';
+import { Pagination } from '@/domain/product/components/Pagination';
+
 export const HomePage = () => {
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
+
+  const { categories, isLoading: categoriesLoading } = useCategoryList();
+  const {
+    products,
+    isLoading: productsLoading,
+    totalPages,
+  } = useProductList({
+    idCategory: selectedCategory || undefined,
+    page: currentPage,
+    pageSize,
+  });
+
+  const handleCategoryChange = (categoryId: number | null) => {
+    setSelectedCategory(categoryId);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="space-y-8">
       <section className="text-center">
@@ -6,19 +37,24 @@ export const HomePage = () => {
         <p className="text-xl text-gray-600">Produtos frescos e de qualidade para você</p>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Frutas Frescas</h3>
-          <p className="text-gray-600">Variedade de frutas selecionadas diariamente</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Verduras</h3>
-          <p className="text-gray-600">Verduras frescas e orgânicas</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">Legumes</h3>
-          <p className="text-gray-600">Legumes de primeira qualidade</p>
-        </div>
+      <section>
+        <h3 className="text-2xl font-bold text-gray-900 mb-4">Nossos Produtos</h3>
+
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+          isLoading={categoriesLoading}
+          className="mb-6"
+        />
+
+        <ProductGrid products={products} isLoading={productsLoading} className="mb-8" />
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </section>
     </div>
   );
